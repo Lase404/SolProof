@@ -1,9 +1,12 @@
-#!/usr/bin/env node
 import express from 'express';
 import { WebSocketServer } from 'ws';
 import dotenv from 'dotenv';
 import chalk from 'chalk';
+import axios from 'axios';
+import Bottleneck from 'bottleneck';
 import NodeCache from 'node-cache';
+import Table from 'cli-table3';
+import { PublicKey, Connection } from '@solana/web3.js';
 import {
   fetchProgramBinary,
   analyzeBinary,
@@ -26,37 +29,49 @@ import {
   traceInteractions,
   exportIdaScript,
   visualizeGraph,
-} from './src/lib/index.js';
-import { success, error } from './src/formatting.js';
-import { PublicKey, Connection } from '@solana/web3.js';
-import Table from 'cli-table3';
+} from './lib/index.js';
+import { success, error } from './utils/formatting.js';
 
-// Load environment variables
 dotenv.config();
 
-// Initialize cache
-const cache = new NodeCache({ stdTTL: 300 }); // 5-minute cache
-let solPriceUSD = 150; // Default; updated dynamically
-
-// Initialize Express app
+const RENDER_API_URL = 'https://solproof-sdk.onrender.com';
 const app = express();
-app.use(express.json()); // Parse JSON bodies
+app.use(express.json());
 const PORT = process.env.PORT || 3000;
-
-// Initialize WebSocket server
 const wss = new WebSocketServer({ noServer: true });
+const cache = new NodeCache({ stdTTL: 300 });
+let solPriceUSD = 150;
 
-// Validate environment variables
-if (!process.env.HELIUS_API_KEY && !process.env.QUICKNODE_RPC_URL) {
-  console.log(chalk.red('Error: HELIUS_API_KEY or QUICKNODE_RPC_URL not set in .env file.'));
-  process.exit(1);
+const limiter = new Bottleneck({
+  maxConcurrent: 10,
+  minTime: 1000 / 5,
+  reservoir: 50,
+  reservoirRefreshAmount: 50,
+  reservoirRefreshInterval: 60 * 1000,
+});
+
+app.use((req, res, next) => {
+  limiter.schedule(() => {
+    next();
+  }).catch(() => {
+    res.status(429).json({ error: 'Too many requests.', support: 'support@solproof.org' });
+  });
+});
+
+async function proxyToRender(req, res, endpoint, method = 'post') {
+  try {
+    const response = await axios({
+      method,
+      url: `${RENDER_API_URL}${endpoint}`,
+      data: req.body,
+      params: req.query,
+    });
+    res.json(response.data);
+  } catch (err) {
+    res.status(500).json({ error: `Proxy failed: ${err.message}`, support: 'support@solproof.org' });
+  }
 }
 
-// Utility functions
-/**
- * Fetches the current SOL/USD price from CoinGecko.
- * @returns {Promise<void>}
- */
 async function fetchSolPrice() {
   const cacheKey = 'solPriceUSD';
   const cachedPrice = cache.get(cacheKey);
@@ -75,11 +90,6 @@ async function fetchSolPrice() {
   }
 }
 
-/**
- * Validates a Solana address.
- * @param {string} address - Address to validate.
- * @returns {boolean} - True if valid, false otherwise.
- */
 function validateAddress(address) {
   try {
     new PublicKey(address);
@@ -89,13 +99,6 @@ function validateAddress(address) {
   }
 }
 
-/**
- * Wraps an async function with a timeout.
- * @param {Function} fn - Async function to wrap.
- * @param {number} ms - Timeout in milliseconds.
- * @param {any} fallback - Fallback value on timeout or error.
- * @returns {Promise<any>} - Result or fallback.
- */
 async function withTimeout(fn, ms, fallback) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), ms);
@@ -110,13 +113,8 @@ async function withTimeout(fn, ms, fallback) {
   }
 }
 
-/**
- * Formats table data as JSON, handling non-string values.
- * @param {Table} table - CLI table instance.
- * @returns {Array<Object>} - JSON representation of table rows.
- */
 function tableToJson(table) {
-  const headers = table.options.head.map(h => String(h).replace(/\x1B\[\d+m/g, '')); // Strip ANSI colors
+  const headers = table.options.head.map(h => String(h).replace(/\x1B\[\d+m/g, ''));
   return table.map(row =>
     headers.reduce((obj, header, i) => {
       const value = row[i] === null || row[i] === undefined ? 'N/A' : String(row[i]).replace(/\x1B\[\d+m/g, '');
@@ -126,14 +124,13 @@ function tableToJson(table) {
   );
 }
 
-// Middleware to validate address
 const validateAddressMiddleware = (req, res, next) => {
   const address = req.params.address || req.body.address;
   if (!address || !validateAddress(address)) {
     return res.status(400).json({
       error: `Invalid program address: ${address || 'missing'}`,
       message: 'Please provide a valid Solana address.',
-      support: 'support@solproof.org',
+      support: 'adunbi8@gmail.com',
     });
   }
   next();
