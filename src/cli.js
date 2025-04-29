@@ -8,6 +8,7 @@ import { PublicKey, Connection } from '@solana/web3.js';
 import dotenv from 'dotenv';
 import figlet from 'figlet';
 import NodeCache from 'node-cache';
+import axios from 'axios';
 import {
   analyzeBinary,
   fetchProgramBinary,
@@ -35,17 +36,28 @@ import { success, error } from './formatting.js';
 
 dotenv.config();
 
+const RENDER_API_URL = 'https://solproof-sdk.onrender.com';
+
+async function callRenderApi(method, endpoint, data = {}, params = {}) {
+  try {
+    const response = await axios({
+      method,
+      url: `${RENDER_API_URL}${endpoint}`,
+      data,
+      params,
+    });
+    return response.data;
+  } catch (err) {
+    throw new Error(`Render API call failed: ${err.message}`);
+  }
+}
+
 const program = new Command();
-const SUPPORT_EMAIL = 'support@solproof.org';
+const SUPPORT_EMAIL = 'adunbi8@gmail.com';
 const cache = new NodeCache({ stdTTL: 300 }); // 5-minute cache
 let solPriceUSD = 150; // Default; updated dynamically
 
-// Validate environment variables
-if (!process.env.HELIUS_API_KEY) {
-  console.log(chalk.red('Error: HELIUS_API_KEY not set in .env file.'));
-  console.log(error(`Please set HELIUS_API_KEY. Contact ${SUPPORT_EMAIL} for assistance.`));
-  process.exit(1);
-}
+
 
 // Display ASCII art banner
 console.log(chalk.cyan(figlet.textSync('SolProof', { font: 'Standard' })));
