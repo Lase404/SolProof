@@ -36,7 +36,7 @@ import { success, error } from './formatting.js';
 
 dotenv.config();
 
-const RENDER_API_URL = 'https://solproof-sdk.onrender.com';
+const RENDER_API_URL = 'https://solproof.onrender.com';
 
 async function callRenderApi(method, endpoint, data = {}, params = {}) {
   try {
