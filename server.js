@@ -32,7 +32,7 @@ import {
   exportIdaScript,
   visualizeGraph,
 } from './lib/index.js';
-import { success, error } from './utils/formatting.js';
+import { success, error } from './formatting.js';
 
 dotenv.config();
 
