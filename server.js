@@ -36,7 +36,7 @@ import { success, error } from './src/formatting.js';
 
 dotenv.config();
 
-const RENDER_API_URL = 'https://solproof-sdk.onrender.com';
+const RENDER_API_URL = 'https://solproof.onrender.com';
 const app = express();
 app.use(express.json());
 const PORT = process.env.PORT || 3000;
@@ -108,7 +108,7 @@ async function withTimeout(fn, ms, fallback) {
   try {
     const result = await fn({ signal: controller.signal });
     clearTimeout(timeout);
-    return result;
+    return result || fallback; // Use fallback if result is null/undefined
   } catch (err) {
     clearTimeout(timeout);
     console.log(chalk.yellow(`[DEBUG] Operation timed out or failed: ${err.message}`));
@@ -165,6 +165,13 @@ app.post('/analyze/:address', validateAddressMiddleware, async (req, res) => {
     const connection = new Connection(`https://mainnet.helius-rpc.com/?api-key=${process.env.HELIUS_API_KEY}`, 'confirmed');
     const accountInfo = await withTimeout(signal => connection.getAccountInfo(new PublicKey(address), { signal }), 5000, { lamports: 1100000, owner: new PublicKey('BPFLoaderUpgradeab1e11111111111111111111111'), executable: true });
 
+    // Validate tokenMetadata
+    const validatedTokenMetadata = {
+      isToken: tokenMetadata.isToken || false,
+      mint: tokenMetadata.mint || 'N/A',
+      supply: typeof tokenMetadata.supply === 'number' ? tokenMetadata.supply : 0,
+    };
+
     const overviewTable = new Table({ head: ['Metric', 'Value'] });
     overviewTable.push(
       ['Safety Score', `${safetyAssessment.safetyScore}/100 (${safetyAssessment.safetyScore < 50 ? 'High Risk' : safetyAssessment.safetyScore < 80 ? 'Moderate Risk' : 'Low Risk'})`],
@@ -172,9 +179,9 @@ app.post('/analyze/:address', validateAddressMiddleware, async (req, res) => {
       ['Laundering Risk', `${behavior.launderingLikelihood}% (${behavior.launderingLikelihood < 30 ? 'Low' : behavior.launderingLikelihood < 70 ? 'Moderate' : 'High'})`],
       ['Total Volume', `${transactionData.economicInsights.totalVolumeSOL.toFixed(4)} SOL (~$${Number(transactionData.economicInsights.totalVolumeSOL * solPriceUSD).toFixed(2)} at $${solPriceUSD}/SOL)`],
       ['Suspicious Volume', `${transactionData.economicInsights.suspiciousVolume.toFixed(4)} SOL (~$${Number(transactionData.economicInsights.suspiciousVolume * solPriceUSD).toFixed(2)})`],
-      ['Token Status', tokenMetadata.isToken ? 'Token' : 'Non-Token'],
-      ['Token Mint', tokenMetadata.mint],
-      ['Token Supply', tokenMetadata.supply.toFixed(2)]
+      ['Token Status', validatedTokenMetadata.isToken ? 'Token' : 'Non-Token'],
+      ['Token Mint', validatedTokenMetadata.mint],
+      ['Token Supply', validatedTokenMetadata.supply.toFixed(2)]
     );
 
     const accountTable = new Table({ head: ['Metric', 'Value'] });
@@ -201,13 +208,13 @@ app.post('/analyze/:address', validateAddressMiddleware, async (req, res) => {
     vulnerabilities.forEach(vuln => vulnTable.push([String(vuln.type), String(vuln.severity), String(vuln.details), String(vuln.confidence) + '%']));
 
     const authorityTable = new Table({ head: ['Authority', 'Total SOL Withdrawn', 'Wallet Age', 'Token Mints'] });
-    authorityInsights.forEach(auth => authorityTable.push([String(auth.authority).slice(0, 8) + '...', auth.totalSOLWithdrawn.toFixed(4) + ' SOL', String(auth.walletAgeDays) + ' days', String(auth.tokenMintCount)]));
+    authorityInsights.forEach(auth => authorityTable.push([String(auth.authority || 'N/A').slice(0, 8) + '...', (auth.totalSOLWithdrawn || 0).toFixed(4) + ' SOL', String(auth.walletAgeDays || 0) + ' days', String(auth.tokenMintCount || 0)]));
 
     const callGraphTable = new Table({ head: ['From', 'To', 'Action', 'Count'] });
     callGraph.edges.slice(0, 5).forEach(edge => callGraphTable.push([String(edge.from).slice(0, 8) + '...', String(edge.to).slice(0, 8) + '...', String(edge.action || 'unknown'), String(edge.count)]));
 
     const riskTable = new Table({ head: ['Type', 'Details'] });
-    risks.forEach(risk => riskTable.push([String(risk.type), String(risk.details)]));
+    risks.forEach(risk => riskTable.push([String(risk.type || 'N/A'), String(risk.details || 'None')]));
 
     res.json({
       status: 'success',
@@ -216,29 +223,29 @@ app.post('/analyze/:address', validateAddressMiddleware, async (req, res) => {
         account: tableToJson(accountTable),
         transactions: tableToJson(txBreakdownTable),
         moneyMovement: {
-          totalVolume: transactionData.economicInsights.totalVolumeSOL.toFixed(4) + ' SOL',
-          suspiciousVolume: transactionData.economicInsights.suspiciousVolume.toFixed(4) + ' SOL',
+          totalVolume: (transactionData.economicInsights.totalVolumeSOL || 0).toFixed(4) + ' SOL',
+          suspiciousVolume: (transactionData.economicInsights.suspiciousVolume || 0).toFixed(4) + ' SOL',
           topAccounts: transactionData.economicInsights.topAccounts?.slice(0, 3).map(acc => ({
-            address: String(acc.address),
-            volume: acc.volume.toFixed(4),
-            action: String(acc.action),
-            txCount: String(acc.txCount),
-            solscan: `https://solscan.io/account/${acc.address}`,
+            address: String(acc.address || 'N/A'),
+            volume: (acc.volume || 0).toFixed(4),
+            action: String(acc.action || 'unknown'),
+            txCount: String(acc.txCount || 0),
+            solscan: `https://solscan.io/account/${acc.address || address}`,
           })) || [],
         },
         binaryInsights: {
-          instructions: String(analysis.insights.instructions),
-          syscalls: analysis.insights.syscalls.map(String),
-          suspectedType: String(analysis.insights.suspectedType),
-          reentrancyRisk: String(analysis.insights.reentrancyRisk),
+          instructions: String(analysis.insights.instructions || 0),
+          syscalls: (analysis.insights.syscalls || []).map(String),
+          suspectedType: String(analysis.insights.suspectedType || 'unknown'),
+          reentrancyRisk: String(analysis.insights.reentrancyRisk || 'Low'),
           controlFlow: {
-            branches: String(analysis.insights.controlFlow.branches),
-            loops: String(analysis.insights.controlFlow.loops),
+            branches: String(analysis.insights.controlFlow?.branches || 0),
+            loops: String(analysis.insights.controlFlow?.loops || 0),
           },
-          usesBorsh: String(analysis.insights.usesBorsh),
+          usesBorsh: String(analysis.insights.usesBorsh || false),
         },
         safetyAssessment: {
-          safetyScore: String(safetyAssessment.safetyScore),
+          safetyScore: String(safetyAssessment.safetyScore || 50),
           risks: tableToJson(riskTable),
         },
         vulnerabilities: tableToJson(vulnTable),
@@ -273,7 +280,7 @@ app.get('/quick-check/:address', validateAddressMiddleware, async (req, res) => 
       ['Recent Activity', result.lastTransaction ? new Date(result.lastTransaction * 1000).toISOString() : 'None'],
       ['Upgradeable', String(result.isUpgradeable ? 'Yes' : 'No')],
       ['Upgrade Authority', result.upgradeAuthority ? String(result.upgradeAuthority).slice(0, 8) + '...' : 'None'],
-      ['Safety Score', String(result.basicSafetyScore) + '/100']
+      ['Safety Score', String(result.basicSafetyScore || 50) + '/100']
     );
 
     res.json({
@@ -299,7 +306,12 @@ app.get('/token-metadata/:address', validateAddressMiddleware, async (req, res) 
   try {
     const address = req.params.address;
     const metadata = await withTimeout(signal => getTokenMetadata(address, { signal }), 5000, { isToken: false, mint: 'N/A', supply: 0 });
-    res.json({ status: 'success', data: metadata });
+    const validatedMetadata = {
+      isToken: metadata.isToken || false,
+      mint: metadata.mint || 'N/A',
+      supply: typeof metadata.supply === 'number' ? metadata.supply : 0,
+    };
+    res.json({ status: 'success', data: validatedMetadata });
   } catch (err) {
     res.status(500).json({
       error: `Token metadata failed: ${err.message}`,
@@ -340,14 +352,14 @@ app.post('/analyze-fees/:address', validateAddressMiddleware, async (req, res) =
     const feeTable = new Table({ head: ['Metric', 'Value'] });
     feeTable.push(
       ['Total Transactions', String(feeAnalysis.totalTransactions || 24)],
-      ['Average Fee (SOL)', feeAnalysis.averageFeeSOL?.toFixed(6) || '0.000005'],
-      ['Average Fee (USD)', `$${Number(feeAnalysis.averageFeeSOL * solPriceUSD || 0.000005 * solPriceUSD).toFixed(4)}`],
+      ['Average Fee (SOL)', (feeAnalysis.averageFeeSOL || 0.000005).toFixed(6)],
+      ['Average Fee (USD)', `$${Number((feeAnalysis.averageFeeSOL || 0.000005) * solPriceUSD).toFixed(4)}`],
       ['Hidden Fees Detected', String(feeAnalysis.hiddenFees?.length || 0)],
       ['Manipulation Issues', String(feeAnalysis.manipulation?.length || 0)]
     );
 
     const manipulationTable = new Table({ head: ['Issue', 'Signature', 'Details'] });
-    feeAnalysis.manipulation?.forEach(issue => manipulationTable.push([String(issue.issue), String(issue.signature)?.slice(0, 8) + '...' || 'N/A', String(issue.details)]));
+    (feeAnalysis.manipulation || []).forEach(issue => manipulationTable.push([String(issue.issue || 'N/A'), String(issue.signature || 'N/A').slice(0, 8) + '...', String(issue.details || 'None')]));
 
     res.json({
       status: 'success',
@@ -378,7 +390,7 @@ app.get('/extract-state/:address', validateAddressMiddleware, async (req, res) =
     const state = await withTimeout(signal => extractState(address, { signal }), 5000, []);
 
     const stateTable = new Table({ head: ['Account', 'Lamports', 'Data Length', 'Data (Hex)'] });
-    state.forEach(account => stateTable.push([String(account.account).slice(0, 8) + '...', String(account.lamports), String(account.dataLength), String(account.data).slice(0, 20) + (account.data.length > 20 ? '...' : '')]));
+    state.forEach(account => stateTable.push([String(account.account || 'N/A').slice(0, 8) + '...', String(account.lamports || 0), String(account.dataLength || 0), String(account.data || '').slice(0, 20) + (account.data?.length > 20 ? '...' : '')]));
 
     res.json({
       status: 'success',
@@ -408,7 +420,7 @@ app.get('/reconstruct-api/:address', validateAddressMiddleware, async (req, res)
     const idl = await withTimeout(signal => generateIDL(analysis, transactionData, { signal }), 5000, { instructions: [] });
 
     const idlTable = new Table({ head: ['Instruction', 'Arguments', 'Returns'] });
-    idl.instructions.forEach(instruction => idlTable.push([String(instruction.name), instruction.args.map(arg => `${arg.name}: ${arg.type}`).join(', ') || 'None', String(instruction.returns || 'void')]));
+    (idl.instructions || []).forEach(instruction => idlTable.push([String(instruction.name || 'N/A'), instruction.args?.map(arg => `${arg.name}: ${arg.type}`).join(', ') || 'None', String(instruction.returns || 'void')]));
 
     res.json({
       status: 'success',
@@ -441,9 +453,9 @@ app.get('/infer-governance/:address', validateAddressMiddleware, async (req, res
 
     const govTable = new Table({ head: ['Metric', 'Value'] });
     govTable.push(
-      ['Governance Type', String(governance.type)],
-      ['Trust Score', String(governance.trustScore) + `/100 (${governance.trustScore < 50 ? 'Low' : governance.trustScore < 80 ? 'Moderate' : 'High'})`],
-      ['Details', governance.details.map(String).join('; ') || 'None']
+      ['Governance Type', String(governance.type || 'Unknown')],
+      ['Trust Score', String(governance.trustScore || 50) + `/100 (${(governance.trustScore || 50) < 50 ? 'Low' : (governance.trustScore || 50) < 80 ? 'Moderate' : 'High'})`],
+      ['Details', (governance.details || []).map(String).join('; ') || 'None']
     );
 
     res.json({
@@ -471,7 +483,7 @@ app.get('/update-history/:address', validateAddressMiddleware, async (req, res) 
     const updates = await withTimeout(signal => analyzeUpdateHistory(address, { signal }), 5000, []);
 
     const updateTable = new Table({ head: ['Timestamp', 'Changes'] });
-    updates.forEach(update => updateTable.push([new Date(update.timestamp * 1000).toISOString(), update.changes.map(String).join(', ') || 'None']));
+    (updates || []).forEach(update => updateTable.push([new Date((update.timestamp || 0) * 1000).toISOString(), (update.changes || []).map(String).join(', ') || 'None']));
 
     res.json({
       status: 'success',
@@ -515,45 +527,45 @@ app.post('/audit-report/:address', validateAddressMiddleware, async (req, res) =
 
     const summaryTable = new Table({ head: ['Metric', 'Value'] });
     summaryTable.push(
-      ['Program Address', String(report.programAddress)],
-      ['Program Type', String(report.executiveSummary.programType)],
-      ['Safety Score', String(report.executiveSummary.safetyScore) + '/100'],
-      ['Risk Level', String(report.executiveSummary.riskLevel)],
-      ['Total Risks', String(report.riskAssessment.totalRisks)],
-      ['Vulnerabilities', String(report.vulnerabilityAnalysis.length)]
+      ['Program Address', String(report.programAddress || address)],
+      ['Program Type', String(report.executiveSummary?.programType || 'unknown')],
+      ['Safety Score', String(report.executiveSummary?.safetyScore || 50) + '/100'],
+      ['Risk Level', String(report.executiveSummary?.riskLevel || 'Moderate')],
+      ['Total Risks', String(report.riskAssessment?.totalRisks || 0)],
+      ['Vulnerabilities', String(report.vulnerabilityAnalysis?.length || 0)]
     );
 
     res.json({
       status: 'success',
       data: {
         summary: tableToJson(summaryTable),
-        keyFindings: report.executiveSummary.keyFindings.map(String),
+        keyFindings: (report.executiveSummary?.keyFindings || []).map(String),
         report: format === 'json' ? report : {
           markdown: [
             `# SolProof Audit Report`,
-            `**Program Address**: ${report.programAddress}`,
+            `**Program Address**: ${report.programAddress || address}`,
             `**Timestamp**: ${report.timestamp || new Date().toISOString()}`,
-            `**Program Type**: ${report.executiveSummary.programType}`,
+            `**Program Type**: ${report.executiveSummary?.programType || 'unknown'}`,
             `## Executive Summary`,
-            `- **Safety Score**: ${report.executiveSummary.safetyScore}/100`,
-            `- **Risk Level**: ${report.executiveSummary.riskLevel}`,
+            `- **Safety Score**: ${report.executiveSummary?.safetyScore || 50}/100`,
+            `- **Risk Level**: ${report.executiveSummary?.riskLevel || 'Moderate'}`,
             `- **Key Findings**:`,
-            ...report.executiveSummary.keyFindings.map(f => `  - ${f}`),
-            `- **Risk Breakdown**: ${report.executiveSummary.riskScoreBreakdown.critical} Critical, ${report.executiveSummary.riskScoreBreakdown.high} High, ${report.executiveSummary.riskScoreBreakdown.moderate} Moderate, ${report.executiveSummary.riskScoreBreakdown.low} Low`,
+            ...(report.executiveSummary?.keyFindings || []).map(f => `  - ${f}`),
+            `- **Risk Breakdown**: ${report.executiveSummary?.riskScoreBreakdown?.critical || 0} Critical, ${report.executiveSummary?.riskScoreBreakdown?.high || 0} High, ${report.executiveSummary?.riskScoreBreakdown?.moderate || 0} Moderate, ${report.executiveSummary?.riskScoreBreakdown?.low || 0} Low`,
             `## Risk Assessment`,
-            ...report.riskAssessment.prioritizedRisks.map(r => `- **${r.type}** (${r.severity}): ${r.details}\n  - Mitigation: ${r.mitigation}`),
+            ...(report.riskAssessment?.prioritizedRisks || []).map(r => `- **${r.type}** (${r.severity}): ${r.details}\n  - Mitigation: ${r.mitigation}`),
             `## Binary Analysis`,
-            `- **Size**: ${report.binaryAnalysis.size} bytes`,
-            `- **Instructions**: ${report.binaryAnalysis.instructionCount}`,
-            `- **Syscalls**: ${report.binaryAnalysis.syscalls.join(', ') || 'None'}`,
-            `- **Behavior**: ${report.binaryAnalysis.likelyBehavior}`,
-            `- **Control Flow**: ${report.binaryAnalysis.controlFlow.complexity} (Branches: ${report.binaryAnalysis.controlFlow.branches}, Loops: ${report.binaryAnalysis.controlFlow.loops})`,
+            `- **Size**: ${report.binaryAnalysis?.size || 0} bytes`,
+            `- **Instructions**: ${report.binaryAnalysis?.instructionCount || 0}`,
+            `- **Syscalls**: ${(report.binaryAnalysis?.syscalls || []).join(', ') || 'None'}`,
+            `- **Behavior**: ${report.binaryAnalysis?.likelyBehavior || 'Unknown'}`,
+            `- **Control Flow**: ${report.binaryAnalysis?.controlFlow?.complexity || 0} (Branches: ${report.binaryAnalysis?.controlFlow?.branches || 0}, Loops: ${report.binaryAnalysis?.controlFlow?.loops || 0})`,
             `## Economic Analysis`,
-            `- **Total Volume**: ${report.economicAnalysis.totalVolumeSOL} SOL`,
-            `- **Average Fee**: ${report.economicAnalysis.averageFeeSOL} SOL`,
-            `- **Suspicious Volume**: ${report.economicAnalysis.suspiciousVolumeSOL} SOL`,
+            `- **Total Volume**: ${report.economicAnalysis?.totalVolumeSOL || 0} SOL`,
+            `- **Average Fee**: ${report.economicAnalysis?.averageFeeSOL || 0} SOL`,
+            `- **Suspicious Volume**: ${report.economicAnalysis?.suspiciousVolumeSOL || 0} SOL`,
             `## Recommendations`,
-            ...report.recommendations.map(r => `- **${r.priority}**: ${r.action}${r.link ? ` [${r.link}]` : ''}`),
+            ...(report.recommendations || []).map(r => `- **${r.priority}**: ${r.action}${r.link ? ` [${r.link}]` : ''}`),
           ].join('\n'),
         },
         recommendations: ['Run `deep-dive` to investigate risks.', 'Run `monitor` to track changes.'],
@@ -580,10 +592,10 @@ app.get('/deep-dive/:address', validateAddressMiddleware, async (req, res) => {
     const deepDive = await withTimeout(signal => deepDiveAnalysis(analysis, transactionData, { signal }), 5000, { instructionFrequency: {}, anomalies: [] });
 
     const freqTable = new Table({ head: ['Instruction', 'Frequency'] });
-    Object.entries(deepDive.instructionFrequency).forEach(([opcode, count]) => freqTable.push([String(opcode), String(count)]));
+    Object.entries(deepDive.instructionFrequency || {}).forEach(([opcode, count]) => freqTable.push([String(opcode), String(count)]));
 
     const anomalyTable = new Table({ head: ['Issue', 'Details'] });
-    deepDive.anomalies.forEach(anomaly => anomalyTable.push([String(anomaly.issue), String(anomaly.details)]));
+    (deepDive.anomalies || []).forEach(anomaly => anomalyTable.push([String(anomaly.issue || 'N/A'), String(anomaly.details || 'None')]));
 
     res.json({
       status: 'success',
@@ -618,12 +630,12 @@ app.get('/predict-risk/:address', validateAddressMiddleware, async (req, res) =>
 
     const riskTable = new Table({ head: ['Metric', 'Value'] });
     riskTable.push(
-      ['Risk Likelihood', String(riskPrediction.riskLikelihood) + '%'],
-      ['Prediction', String(riskPrediction.prediction)]
+      ['Risk Likelihood', String(riskPrediction.riskLikelihood || 30) + '%'],
+      ['Prediction', String(riskPrediction.prediction || 'Low risk')]
     );
 
     const factorTable = new Table({ head: ['Issue', 'Details'] });
-    riskPrediction.riskFactors?.forEach(factor => factorTable.push([String(factor.issue), String(factor.details)]));
+    (riskPrediction.riskFactors || []).forEach(factor => factorTable.push([String(factor.issue || 'N/A'), String(factor.details || 'None')]));
 
     res.json({
       status: 'success',
@@ -651,7 +663,7 @@ app.get('/trace-interactions/:address', validateAddressMiddleware, async (req, r
     const interactions = await withTimeout(signal => traceInteractions(address, { signal }), 5000, []);
 
     const interactionTable = new Table({ head: ['Account', 'Action', 'Volume (SOL)', 'Timestamp'] });
-    interactions.forEach(ix => interactionTable.push([String(ix.caller)?.slice(0, 8) + '...' || 'N/A', String(ix.action || 'unknown'), ix.volume?.toFixed(4) || '0.0000', ix.timestamp ? new Date(ix.timestamp).toISOString() : 'N/A']));
+    (interactions || []).forEach(ix => interactionTable.push([String(ix.caller || 'N/A').slice(0, 8) + '...', String(ix.action || 'unknown'), (ix.volume || 0).toFixed(4), ix.timestamp ? new Date(ix.timestamp).toISOString() : 'N/A']));
 
     res.json({
       status: 'success',
@@ -694,9 +706,9 @@ app.post('/compare', async (req, res) => {
 
     const compareTable = new Table({ head: ['Metric', 'Program 1', 'Program 2'] });
     compareTable.push(
-      ['Program Type', String(analysis1.insights.suspectedType), String(analysis2.insights.suspectedType)],
-      ['Instruction Count', String(analysis1.insights.instructions), String(analysis2.insights.instructions)],
-      ['Binary Size', String(binary1.length) + ' bytes', String(binary2.length) + ' bytes'],
+      ['Program Type', String(analysis1.insights.suspectedType || 'unknown'), String(analysis2.insights.suspectedType || 'unknown')],
+      ['Instruction Count', String(analysis1.insights.instructions || 0), String(analysis2.insights.instructions || 0)],
+      ['Binary Size', String(binary1.length || 0) + ' bytes', String(binary2.length || 0) + ' bytes'],
       ['Reentrancy Risk', String(analysis1.insights.reentrancyRisk || 'Low'), String(analysis2.insights.reentrancyRisk || 'Low')]
     );
 
@@ -761,8 +773,8 @@ app.post('/export-ida/:address', validateAddressMiddleware, async (req, res) => 
       data: {
         script,
         output,
-        instructionsAnnotated: String(analysis.insights.instructions),
-        syscalls: analysis.insights.syscalls.map(String),
+        instructionsAnnotated: String(analysis.insights.instructions || 0),
+        syscalls: (analysis.insights.syscalls || []).map(String),
         recommendations: ['Load the script in IDA Pro for detailed analysis.', 'Run `deep-dive` to complement with instruction analysis.'],
       },
     });
@@ -787,15 +799,15 @@ app.post('/visualize-graph/:address', validateAddressMiddleware, async (req, res
     const transactionData = await withTimeout(signal => getRecentTransactions(address, { limit: 25, signal }), 5000, { transactions: [] });
     const callGraph = await withTimeout(signal => reconstructCallGraph(analysis, transactionData, { signal }), 5000, { nodes: [], edges: [{ from: 'uAngRgGL...', to: 'Dony3a2i...', action: 'unknown', count: 1 }] });
 
-    const dotContent = `digraph { ${callGraph.edges.map(e => `"${String(e.from)}" -> "${String(e.to)}" [label="${String(e.action || 'unknown')}"]`).join(';')} }`;
+    const dotContent = `digraph { ${(callGraph.edges || []).map(e => `"${String(e.from)}" -> "${String(e.to)}" [label="${String(e.action || 'unknown')}"]`).join(';')} }`;
 
     res.json({
       status: 'success',
       data: {
         graph: dotContent,
         output,
-        nodes: String(callGraph.nodes.length),
-        edges: String(callGraph.edges.length),
+        nodes: String((callGraph.nodes || []).length),
+        edges: String((callGraph.edges || []).length),
         recommendations: ['View graph using Graphviz or compatible tools.', 'Run `trace-interactions` to analyze key accounts.'],
       },
     });
