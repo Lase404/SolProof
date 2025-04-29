@@ -31,7 +31,7 @@ import {
   traceInteractions,
   exportIdaScript,
   visualizeGraph,
-} from './lib/index.js';
+} from '.src/lib/index.js';
 import { success, error } from './formatting.js';
 
 dotenv.config();
