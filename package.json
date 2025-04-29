@@ -1,16 +1,17 @@
 {
   "name": "solproof-sdk",
-  "version": "1.0.0",
-  "description": "SolProof",
+  "version": "1.0.1",
+  "description": "SolProof SDK for reverse-engineering Solana programs",
   "type": "module",
   "main": "src/cli.js",
   "bin": {
-    "solproof": "./src/cli.js"
+    "solproof": "./src/cli.js",
+    "solproof-server": "./server.js"
   },
   "scripts": {
     "start": "node server.js",
-    "build": "npm install",
-    "test": "echo \"No tests specified\" && exit 0"
+    "cli": "node src/cli.js",
+    "test": "echo \"No tests yet\" && exit 0"
   },
   "dependencies": {
     "@solana/web3.js": "^1.95.3",
@@ -30,20 +31,20 @@
     "winston": "^3.14.2",
     "ws": "^8.18.0"
   },
-  "engines": {
-    "node": ">=16.0.0",
-    "npm": ">=8.0.0"
-  },
-  "keywords": [
-    "solana"
-  ],
-  "author": "Your Name",
+  "keywords": ["solana", "reverse-engineering", "blockchain", "security", "audit"],
+  "author": "lase",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "https://github.com/lase404/solproof.git"
   },
-  "devDependencies": {
-    "eslint": "^9.25.1"
-  }
+  "homepage": "https://github.com/lase404/solproof",
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "src/",
+    "server.js",
+    "README.md"
+  ]
 }
