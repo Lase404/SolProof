@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import { Command } from 'commander';
 import ora from 'ora';
 import inquirer from 'inquirer';
