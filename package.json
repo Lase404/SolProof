@@ -1,6 +1,6 @@
 {
     "name": "solproof1-sdk",
-    "version": "1.0.5",
+    "version": "1.0.6",
     "description": "SolProof SDK for reverse-engineering Solana programs",
     "type": "module",
     "main": "src/cli.js",
