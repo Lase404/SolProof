@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>SolProof Dashboard: <%= address %></title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f9; }
+    h1 { color: #333; }
+    h2 { color: #555; }
+    table { border-collapse: collapse; width: 100%; margin-bottom: 20px; }
+    th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+    th { background-color: #4CAF50; color: white; }
+    tr:nth-child(even) { background-color: #f2f2f2; }
+    .chart-container { margin: 20px 0; }
+    .form-container { margin: 20px 0; }
+    input, textarea, button { margin: 5px; padding: 8px; }
+    button { background-color: #4CAF50; color: white; border: none; cursor: pointer; }
+    button:hover { background-color: #45a049; }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <h1>SolProof Dashboard: <%= address %></h1>
+
+  <h2>Audit Report Summary</h2>
+  <table>
+    <tr>
+      <th>Safety Score</th>
+      <td><%= report.safetyAssessment.safetyScore %>/100</td>
+    </tr>
+    <tr>
+      <th>Vulnerabilities</th>
+      <td><%= report.vulnerabilities.length %></td>
+    </tr>
+    <tr>
+      <th>Risk Score</th>
+      <td><%= report.risks.score %>/100</td>
+    </tr>
+    <tr>
+      <th>Governance Trust</th>
+      <td><%= report.governance.trustScore %>/100</td>
+    </tr>
+    <tr>
+      <th>Opinion</th>
+      <td><%= report.opinion %></td>
+    </tr>
+  </table>
+
+  <h2>Anomalies</h2>
+  <table>
+    <tr>
+      <th>Timestamp</th>
+      <th>Details</th>
+    </tr>
+    <% anomalies.forEach(anomaly => { %>
+      <tr>
+        <td><%= anomaly.timestamp %></td>
+        <td><%= anomaly.details %></td>
+      </tr>
+    <% }) %>
+  </table>
+
+  <div class="chart-container">
+    <canvas id="volumeChart"></canvas>
+  </div>
+
+  <h2>Submit Verification Report</h2>
+  <div class="form-container">
+    <form action="/verify/<%= address %>" method="POST">
+      <input type="text" name="user" placeholder="Your Name" required>
+      <textarea name="report" placeholder="Enter verification report (e.g., 'Program appears valid')" required></textarea>
+      <button type="submit">Submit Report</button>
+    </form>
+  </div>
+
+  <script>
+    const ctx = document.getElementById('volumeChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: Array.from({ length: <%= report.economicInsights.feeAnalysis.feeDistribution.length %> }, () => ''),
+        datasets: [{
+          label: 'Transaction Fees (SOL)',
+          data: <%= JSON.stringify(report.economicInsights.feeAnalysis.feeDistribution) %>,
+          borderColor: '#4CAF50',
+          fill: false
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: { beginAtZero: true, title: { display: true, text: 'Fees (SOL)' } }
+        }
+      }
+    });
+  </script>
+</body>
+</html>

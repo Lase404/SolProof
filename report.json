@@ -1,0 +1,410 @@
+{
+  "programAddress": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA",
+  "timestamp": "2025-04-29T11:45:32.453Z",
+  "executiveSummary": {
+    "safetyScore": 80,
+    "riskLevel": "Low",
+    "programType": "UNKNOWN",
+    "keyFindings": [
+      "Safety Score: 80/100",
+      "Vulnerabilities: 1 (0 High, 1 Moderate)",
+      "Transaction Volume: 6.3558 SOL",
+      "Authority Control: 0 authorities"
+    ],
+    "riskScoreBreakdown": {
+      "critical": 0,
+      "high": 0,
+      "moderate": 1,
+      "low": 0
+    }
+  },
+  "riskAssessment": {
+    "prioritizedRisks": [
+      {
+        "type": "Excessive Authority Control",
+        "severity": "Moderate",
+        "details": "Single authority increases centralization risk.",
+        "mitigation": "Use multisig or distribute authority."
+      }
+    ],
+    "riskScoreBreakdown": {
+      "critical": 0,
+      "high": 0,
+      "moderate": 1,
+      "low": 0
+    },
+    "totalRisks": 1
+  },
+  "binaryAnalysis": {
+    "size": 32,
+    "instructionCount": 4,
+    "syscalls": [
+      "sol_verify_signature"
+    ],
+    "likelyBehavior": "unknown",
+    "controlFlow": {
+      "branches": 0,
+      "loops": 0,
+      "complexity": "Moderate"
+    },
+    "dependencies": [
+      "86JGVSkKzWTBYJam3FVFgibiQEv64127ZobDU8ibtuTu",
+      "So11111111111111111111111111111111111111112",
+      "uAngRgGLdeemerpmLampgLJ4ENFMygHPuKdU2nKwBNg",
+      "Dony3a2iYh9zvSqmDqc9h6EWvomD3Q1nPR5QBrSUXEYn",
+      "CzYQ2kFnBxsNEt9Zy34vQ3n5fSDhvA4o4XaTnq1rLvyr",
+      "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+      "4JZrpGJ8PHS4mhYQTJYMDPE2CWw9QjS9Av34kLWHV6kH",
+      "AXsFcdhbvGoyXLwZXYSva8Z9SphfPD6gw4UE4FfcH1wG",
+      "H7q6ZXkF7WTwAssgmpdmTtJuH8qXAwwYAUazPxmBqfJS",
+      "BScSL6YL9Kgzbt5UEWiaGvku8uiS5qWFFn3ZdrTyFPRX",
+      "96dyL7wSqct7AC7wSuNsgGpsP1LGMJ4PveKu4yEEP5bD",
+      "32fED9dqVvZTNLrve9N8hESJPg968jVbaqRpDzPAPrEu",
+      "DvzFKLR7kS1MZ7uTHRPnXmn3rCjC8hjjyFxQNUY67qkf",
+      "5r25HeXLgmziyMRaV64TpA4ytrX2SL1LzndTmQpcqJW6",
+      "4dxZdL9doegpZVM9ovkUjS2q1NDTrvr3Pqi9FFW4YWZ6",
+      "829oNDvgTgLEK7QL8VoCS5F1swNGcf5b6pEvVzxdpURL",
+      "BzS5FRvmiQuhRPeZoWUTFyH322paMcRSByJ1J9hMvXvL",
+      "HsjPW6DwDY3mCN55w8eDpFzP3a3CTPHvRcfJvcMAKFDa"
+    ]
+  },
+  "economicAnalysis": {
+    "totalVolumeSOL": "6.3558",
+    "averageFeeSOL": "0.000009",
+    "transactionCount": 23,
+    "transactionTypes": {
+      "swaps": {
+        "count": 3,
+        "volumeSOL": 5.99558809
+      },
+      "transfers": {
+        "count": 0,
+        "volumeSOL": 0
+      },
+      "mints": {
+        "count": 0,
+        "volumeSOL": 0
+      },
+      "burns": {
+        "count": 0,
+        "volumeSOL": 0
+      },
+      "governance": {
+        "count": 0,
+        "volumeSOL": 0
+      },
+      "nftMints": {
+        "count": 0,
+        "volumeSOL": 0
+      },
+      "others": {
+        "count": 20,
+        "volumeSOL": 0.3601730979999999
+      }
+    },
+    "suspiciousVolumeSOL": "0.0002",
+    "tokenFlows": {
+      "topOutflows": [],
+      "topInflows": [],
+      "concentrationRisk": false
+    }
+  },
+  "authorityAnalysis": [],
+  "callGraphAnalysis": {
+    "nodes": [
+      "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA",
+      "86JGVSkKzWTBYJam3FVFgibiQEv64127ZobDU8ibtuTu",
+      "So11111111111111111111111111111111111111112",
+      "uAngRgGLdeemerpmLampgLJ4ENFMygHPuKdU2nKwBNg",
+      "Dony3a2iYh9zvSqmDqc9h6EWvomD3Q1nPR5QBrSUXEYn",
+      "CzYQ2kFnBxsNEt9Zy34vQ3n5fSDhvA4o4XaTnq1rLvyr",
+      "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+      "4JZrpGJ8PHS4mhYQTJYMDPE2CWw9QjS9Av34kLWHV6kH",
+      "AXsFcdhbvGoyXLwZXYSva8Z9SphfPD6gw4UE4FfcH1wG",
+      "H7q6ZXkF7WTwAssgmpdmTtJuH8qXAwwYAUazPxmBqfJS",
+      "BScSL6YL9Kgzbt5UEWiaGvku8uiS5qWFFn3ZdrTyFPRX",
+      "96dyL7wSqct7AC7wSuNsgGpsP1LGMJ4PveKu4yEEP5bD",
+      "32fED9dqVvZTNLrve9N8hESJPg968jVbaqRpDzPAPrEu",
+      "DvzFKLR7kS1MZ7uTHRPnXmn3rCjC8hjjyFxQNUY67qkf",
+      "5r25HeXLgmziyMRaV64TpA4ytrX2SL1LzndTmQpcqJW6",
+      "4dxZdL9doegpZVM9ovkUjS2q1NDTrvr3Pqi9FFW4YWZ6",
+      "829oNDvgTgLEK7QL8VoCS5F1swNGcf5b6pEvVzxdpURL",
+      "BzS5FRvmiQuhRPeZoWUTFyH322paMcRSByJ1J9hMvXvL",
+      "HsjPW6DwDY3mCN55w8eDpFzP3a3CTPHvRcfJvcMAKFDa"
+    ],
+    "edges": [
+      {
+        "from": "86JGVSkKzWTBYJam3FVFgibiQEv64127ZobDU8ibtuTu",
+        "to": "So11111111111111111111111111111111111111112",
+        "action": "unknown",
+        "count": 1
+      },
+      {
+        "from": "uAngRgGLdeemerpmLampgLJ4ENFMygHPuKdU2nKwBNg",
+        "to": "Dony3a2iYh9zvSqmDqc9h6EWvomD3Q1nPR5QBrSUXEYn",
+        "action": "unknown",
+        "count": 1
+      },
+      {
+        "from": "uAngRgGLdeemerpmLampgLJ4ENFMygHPuKdU2nKwBNg",
+        "to": "Dony3a2iYh9zvSqmDqc9h6EWvomD3Q1nPR5QBrSUXEYn",
+        "action": "unknown",
+        "count": 1
+      },
+      {
+        "from": "uAngRgGLdeemerpmLampgLJ4ENFMygHPuKdU2nKwBNg",
+        "to": "Dony3a2iYh9zvSqmDqc9h6EWvomD3Q1nPR5QBrSUXEYn",
+        "action": "unknown",
+        "count": 1
+      },
+      {
+        "from": "uAngRgGLdeemerpmLampgLJ4ENFMygHPuKdU2nKwBNg",
+        "to": "Dony3a2iYh9zvSqmDqc9h6EWvomD3Q1nPR5QBrSUXEYn",
+        "action": "unknown",
+        "count": 1
+      },
+      {
+        "from": "CzYQ2kFnBxsNEt9Zy34vQ3n5fSDhvA4o4XaTnq1rLvyr",
+        "to": "So11111111111111111111111111111111111111112",
+        "action": "unknown",
+        "count": 1
+      },
+      {
+        "from": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "to": "4JZrpGJ8PHS4mhYQTJYMDPE2CWw9QjS9Av34kLWHV6kH",
+        "action": "unknown",
+        "count": 1
+      },
+      {
+        "from": "86JGVSkKzWTBYJam3FVFgibiQEv64127ZobDU8ibtuTu",
+        "to": "So11111111111111111111111111111111111111112",
+        "action": "unknown",
+        "count": 1
+      },
+      {
+        "from": "AXsFcdhbvGoyXLwZXYSva8Z9SphfPD6gw4UE4FfcH1wG",
+        "to": "H7q6ZXkF7WTwAssgmpdmTtJuH8qXAwwYAUazPxmBqfJS",
+        "action": "unknown",
+        "count": 1
+      },
+      {
+        "from": "86JGVSkKzWTBYJam3FVFgibiQEv64127ZobDU8ibtuTu",
+        "to": "So11111111111111111111111111111111111111112",
+        "action": "unknown",
+        "count": 1
+      },
+      {
+        "from": "86JGVSkKzWTBYJam3FVFgibiQEv64127ZobDU8ibtuTu",
+        "to": "So11111111111111111111111111111111111111112",
+        "action": "unknown",
+        "count": 1
+      },
+      {
+        "from": "86JGVSkKzWTBYJam3FVFgibiQEv64127ZobDU8ibtuTu",
+        "to": "So11111111111111111111111111111111111111112",
+        "action": "unknown",
+        "count": 1
+      },
+      {
+        "from": "86JGVSkKzWTBYJam3FVFgibiQEv64127ZobDU8ibtuTu",
+        "to": "So11111111111111111111111111111111111111112",
+        "action": "unknown",
+        "count": 1
+      },
+      {
+        "from": "86JGVSkKzWTBYJam3FVFgibiQEv64127ZobDU8ibtuTu",
+        "to": "So11111111111111111111111111111111111111112",
+        "action": "unknown",
+        "count": 1
+      },
+      {
+        "from": "86JGVSkKzWTBYJam3FVFgibiQEv64127ZobDU8ibtuTu",
+        "to": "So11111111111111111111111111111111111111112",
+        "action": "unknown",
+        "count": 1
+      },
+      {
+        "from": "86JGVSkKzWTBYJam3FVFgibiQEv64127ZobDU8ibtuTu",
+        "to": "So11111111111111111111111111111111111111112",
+        "action": "unknown",
+        "count": 1
+      },
+      {
+        "from": "86JGVSkKzWTBYJam3FVFgibiQEv64127ZobDU8ibtuTu",
+        "to": "So11111111111111111111111111111111111111112",
+        "action": "unknown",
+        "count": 1
+      },
+      {
+        "from": "uAngRgGLdeemerpmLampgLJ4ENFMygHPuKdU2nKwBNg",
+        "to": "Dony3a2iYh9zvSqmDqc9h6EWvomD3Q1nPR5QBrSUXEYn",
+        "action": "unknown",
+        "count": 1
+      },
+      {
+        "from": "uAngRgGLdeemerpmLampgLJ4ENFMygHPuKdU2nKwBNg",
+        "to": "Dony3a2iYh9zvSqmDqc9h6EWvomD3Q1nPR5QBrSUXEYn",
+        "action": "unknown",
+        "count": 1
+      },
+      {
+        "from": "uAngRgGLdeemerpmLampgLJ4ENFMygHPuKdU2nKwBNg",
+        "to": "Dony3a2iYh9zvSqmDqc9h6EWvomD3Q1nPR5QBrSUXEYn",
+        "action": "unknown",
+        "count": 1
+      },
+      {
+        "from": "uAngRgGLdeemerpmLampgLJ4ENFMygHPuKdU2nKwBNg",
+        "to": "Dony3a2iYh9zvSqmDqc9h6EWvomD3Q1nPR5QBrSUXEYn",
+        "action": "unknown",
+        "count": 1
+      },
+      {
+        "from": "uAngRgGLdeemerpmLampgLJ4ENFMygHPuKdU2nKwBNg",
+        "to": "Dony3a2iYh9zvSqmDqc9h6EWvomD3Q1nPR5QBrSUXEYn",
+        "action": "unknown",
+        "count": 1
+      },
+      {
+        "from": "uAngRgGLdeemerpmLampgLJ4ENFMygHPuKdU2nKwBNg",
+        "to": "Dony3a2iYh9zvSqmDqc9h6EWvomD3Q1nPR5QBrSUXEYn",
+        "action": "unknown",
+        "count": 1
+      },
+      {
+        "from": "uAngRgGLdeemerpmLampgLJ4ENFMygHPuKdU2nKwBNg",
+        "to": "Dony3a2iYh9zvSqmDqc9h6EWvomD3Q1nPR5QBrSUXEYn",
+        "action": "unknown",
+        "count": 1
+      },
+      {
+        "from": "uAngRgGLdeemerpmLampgLJ4ENFMygHPuKdU2nKwBNg",
+        "to": "Dony3a2iYh9zvSqmDqc9h6EWvomD3Q1nPR5QBrSUXEYn",
+        "action": "unknown",
+        "count": 1
+      },
+      {
+        "from": "uAngRgGLdeemerpmLampgLJ4ENFMygHPuKdU2nKwBNg",
+        "to": "Dony3a2iYh9zvSqmDqc9h6EWvomD3Q1nPR5QBrSUXEYn",
+        "action": "unknown",
+        "count": 1
+      },
+      {
+        "from": "uAngRgGLdeemerpmLampgLJ4ENFMygHPuKdU2nKwBNg",
+        "to": "Dony3a2iYh9zvSqmDqc9h6EWvomD3Q1nPR5QBrSUXEYn",
+        "action": "unknown",
+        "count": 1
+      },
+      {
+        "from": "uAngRgGLdeemerpmLampgLJ4ENFMygHPuKdU2nKwBNg",
+        "to": "Dony3a2iYh9zvSqmDqc9h6EWvomD3Q1nPR5QBrSUXEYn",
+        "action": "unknown",
+        "count": 1
+      },
+      {
+        "from": "uAngRgGLdeemerpmLampgLJ4ENFMygHPuKdU2nKwBNg",
+        "to": "Dony3a2iYh9zvSqmDqc9h6EWvomD3Q1nPR5QBrSUXEYn",
+        "action": "unknown",
+        "count": 1
+      },
+      {
+        "from": "uAngRgGLdeemerpmLampgLJ4ENFMygHPuKdU2nKwBNg",
+        "to": "Dony3a2iYh9zvSqmDqc9h6EWvomD3Q1nPR5QBrSUXEYn",
+        "action": "unknown",
+        "count": 1
+      },
+      {
+        "from": "uAngRgGLdeemerpmLampgLJ4ENFMygHPuKdU2nKwBNg",
+        "to": "Dony3a2iYh9zvSqmDqc9h6EWvomD3Q1nPR5QBrSUXEYn",
+        "action": "unknown",
+        "count": 1
+      },
+      {
+        "from": "uAngRgGLdeemerpmLampgLJ4ENFMygHPuKdU2nKwBNg",
+        "to": "Dony3a2iYh9zvSqmDqc9h6EWvomD3Q1nPR5QBrSUXEYn",
+        "action": "unknown",
+        "count": 1
+      },
+      {
+        "from": "uAngRgGLdeemerpmLampgLJ4ENFMygHPuKdU2nKwBNg",
+        "to": "Dony3a2iYh9zvSqmDqc9h6EWvomD3Q1nPR5QBrSUXEYn",
+        "action": "unknown",
+        "count": 1
+      },
+      {
+        "from": "BScSL6YL9Kgzbt5UEWiaGvku8uiS5qWFFn3ZdrTyFPRX",
+        "to": "96dyL7wSqct7AC7wSuNsgGpsP1LGMJ4PveKu4yEEP5bD",
+        "action": "swap",
+        "count": 1
+      },
+      {
+        "from": "32fED9dqVvZTNLrve9N8hESJPg968jVbaqRpDzPAPrEu",
+        "to": "DvzFKLR7kS1MZ7uTHRPnXmn3rCjC8hjjyFxQNUY67qkf",
+        "action": "swap",
+        "count": 1
+      },
+      {
+        "from": "5r25HeXLgmziyMRaV64TpA4ytrX2SL1LzndTmQpcqJW6",
+        "to": "4dxZdL9doegpZVM9ovkUjS2q1NDTrvr3Pqi9FFW4YWZ6",
+        "action": "swap",
+        "count": 1
+      },
+      {
+        "from": "829oNDvgTgLEK7QL8VoCS5F1swNGcf5b6pEvVzxdpURL",
+        "to": "BzS5FRvmiQuhRPeZoWUTFyH322paMcRSByJ1J9hMvXvL",
+        "action": "swap",
+        "count": 1
+      },
+      {
+        "from": "86JGVSkKzWTBYJam3FVFgibiQEv64127ZobDU8ibtuTu",
+        "to": "So11111111111111111111111111111111111111112",
+        "action": "unknown",
+        "count": 1
+      },
+      {
+        "from": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "to": "HsjPW6DwDY3mCN55w8eDpFzP3a3CTPHvRcfJvcMAKFDa",
+        "action": "unknown",
+        "count": 1
+      }
+    ],
+    "interactionComplexity": "Moderate"
+  },
+  "vulnerabilityAnalysis": [
+    {
+      "type": "Excessive Authority Control",
+      "severity": "Moderate",
+      "details": "Single authority increases centralization risk.",
+      "confidence": 85,
+      "mitigation": "Use multisig or distribute authority.",
+      "affectedComponent": "Authority Management"
+    }
+  ],
+  "safetyAnalysis": {
+    "safetyScore": 80,
+    "feedback": []
+  },
+  "recommendations": [
+    {
+      "priority": "High",
+      "action": "Monitor program updates on Solscan.",
+      "link": "https://solscan.io/account/pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA#events"
+    },
+    {
+      "priority": "Moderate",
+      "action": "Verify governance or token logic on-chain.",
+      "link": "https://solscan.io/account/pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA"
+    },
+    {
+      "priority": "High",
+      "action": "Address detected vulnerabilities.",
+      "link": null
+    }
+  ],
+  "metadata": {
+    "version": "1.0.0",
+    "generatedBy": "SolProof SDK",
+    "generationTime": "2025-04-29T11:45:32.454Z",
+    "solanaNetwork": "mainnet"
+  }
+}
